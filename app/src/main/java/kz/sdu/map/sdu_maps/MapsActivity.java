@@ -11,7 +11,10 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -55,6 +58,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private SearchView searchView;
     private GoogleMap mMap;
     private RecyclerView rvCategories;
+    private ImageView openCloseCategory;
+    private FrameLayout flCategory;
     private GoogleApiClient client;
     private LocationRequest locationRequest;
     private Location lastlocation;
@@ -69,6 +74,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<PlaceModel> places;
     private CategoriesAdapter adapter;
 
+    private boolean isOpenCategory = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,7 +83,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         categories = getCategories();
         places = getPlaces();
+        flCategory = findViewById(R.id.flCat);
+        openCloseCategory = findViewById(R.id.ivOpenCloseCat);
         configureRVcategories();
+
+        openCloseCategory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isOpenCategory) {
+                    flCategory.setVisibility(View.GONE);
+                    isOpenCategory = false;
+                } else {
+                    flCategory.setVisibility(View.VISIBLE);
+                    isOpenCategory = true;
+                }
+            }
+        });
 
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
@@ -269,10 +291,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onCategoryClicked(int categoryId) {
-        drawMarkers(categoryId);
         if (categories.get(categoryId).isSelected()) {
             categories.get(categoryId).setSelected(false);
+            drawMarkers(-1);
         } else {
+            drawMarkers(categoryId);
             for (int i = 0; i < categories.size(); i++) {
                 if (categoryId == i) categories.get(i).setSelected(true);
                 else categories.get(i).setSelected(false);
